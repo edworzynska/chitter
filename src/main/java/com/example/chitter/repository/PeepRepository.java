@@ -9,4 +9,5 @@ import java.util.List;
 public interface PeepRepository extends JpaRepository<Peep, Long> {
     List<Peep> findByUser(User user);
     List<Peep> findByUserId(Long id);
+
 }

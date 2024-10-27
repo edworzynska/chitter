@@ -6,6 +6,7 @@ import com.example.chitter.repository.PeepRepository;
 import com.example.chitter.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.h2.tools.Server;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,33 +34,30 @@ class PeepServiceIntegrationTest {
 
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    PeepService peepService;
+    private PeepService peepService;
 
     @Autowired
-    PeepRepository peepRepository;
+    private PeepRepository peepRepository;
 
-    static User user1;
-    static User user2;
+    private static User user1;
+    private static User user2;
 
     @BeforeAll
     public static void initTest() throws SQLException {
 
-        Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8084")
+        Server.createWebServer("-web", "-webAllowOthers", "-webPort", "9094")
                 .start();
 
     }
     @BeforeEach
     @Transactional
     void setUp() {
-        userRepository.deleteAll();
-        peepRepository.deleteAll();
-
         user1 = new User();
-        user1.setUsername("user1");
-        user1.setEmail("user1@email.com");
+        user1.setUsername("user111");
+        user1.setEmail("user11@email.com");
         user1.setPassword("User1Password#");
         userRepository.save(user1);
 
@@ -69,16 +67,22 @@ class PeepServiceIntegrationTest {
         user2.setPassword("User2Password#");
         userRepository.save(user2);
     }
+    @AfterEach
+    void clearUp(){
+        userRepository.delete(user1);
+        userRepository.delete(user2);
+    }
 
     @Test
     void createsPeep() throws Exception{
-        Peep peep = peepService.createPeep("user1", "doo bee");
+        Peep peep = peepService.createPeep("user111", "doo bee");
         assertEquals(peepRepository.findAll().size(), 1);
         String rslt = "";
         for (Peep p : peepRepository.findByUser(user1)){
             rslt += p.getContents();
         }
         assertEquals("doo bee", rslt);
+        peepRepository.delete(peep);
     }
 
     @Test
@@ -89,7 +93,21 @@ class PeepServiceIntegrationTest {
 
     @Test
     void throwsErrorIfContentIsEmpty() throws Exception{
-        InvalidParameterException e = assertThrows(InvalidParameterException.class, ()->peepService.createPeep("user1", ""));
+        InvalidParameterException e = assertThrows(InvalidParameterException.class, ()->peepService.createPeep("user111", ""));
         assertEquals("Peep cannot be empty!", e.getMessage());
+    }
+    @Test
+    void returnsPeepByItsId() throws Exception{
+        Peep peep = peepService.createPeep("user111", "some contents");
+        Peep result = peepService.getPeep(peep.getId());
+        assertEquals(peep.getId(), result.getId());
+        assertEquals("user111", result.getUser().getUsername());
+        peepRepository.delete(peep);
+    }
+    @Test
+    void returnsErrorIfPeepDoesntExist() throws Exception{
+        EntityNotFoundException e = assertThrows(EntityNotFoundException.class, () -> peepService.getPeep(10L));
+        assertEquals("Peep not found!", e.getMessage());
+
     }
 }

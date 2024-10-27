@@ -6,6 +6,7 @@ import jakarta.persistence.EntityExistsException;
 import org.h2.tools.Server;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,35 +22,38 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserServiceIntegrationTest {
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
-    @BeforeAll
-    public static void initTest() throws SQLException {
-
-        Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8082")
-                .start();
-    }
-
-    @AfterEach
-    void deleteData(){
-        userRepository.deleteAll();
-    }
+//    @BeforeAll
+//    public static void initTest() throws SQLException {
+//
+//        Server.createWebServer("-web", "", "-webPort", "8092")
+//                .start();
+//    }
+//
+//    @AfterEach
+//    void deleteData(){
+//        userRepository.deleteAll();
+//    }
 
     @Test
     void createsNewUser() {
-        User user = userService.createUser("ddd@dd.com", "doo", "pass1word!");
-        assertEquals(userRepository.count(), 1);
+        User user = userService.createUser("ddd1@dd.com", "doo1", "pass1word!");
+        assertEquals("doo1", user.getUsername());
+        assertTrue(userRepository.existsById(user.getId()));
+        userRepository.delete(user);
     }
     @Test
     void returnsAnErrorIfPasswordDoesntHaveCorrectLength() {
         SecurityException e = assertThrows(SecurityException.class, () -> userService.createUser("ddd@dd.com", "doo", "pass"));
         assertEquals("Password must be at least 8 characters long, must contain at least one special character, one letter and one number!", e.getMessage());
+
     }
     @Test
     void returnsAnErrorIfPasswordDoesntHaveNumbersOrSpecialCharacters() {
@@ -72,17 +76,20 @@ class UserServiceIntegrationTest {
         User user1 = userService.createUser("email@email.com", "user1", "pass%word1");
         EntityExistsException e = assertThrows(EntityExistsException.class, ()->userService.createUser("email@email.com", "user1", "pass%word1"));
         assertEquals("User already exists!", e.getMessage());
+        userRepository.delete(user1);
     }
     @Test
     void throwsErrorIfUserAlreadyExists2() {
         User user1 = userService.createUser("email@email.com", "user1", "pass%word1");
         EntityExistsException e = assertThrows(EntityExistsException.class, ()->userService.createUser("email@email.com", "user2", "pass%word1"));
         assertEquals("User already exists!", e.getMessage());
+        userRepository.delete(user1);
     }
     @Test
     void throwsErrorIfUserAlreadyExists3() {
         User user1 = userService.createUser("email@email.com", "user1", "pass%word1");
         EntityExistsException e = assertThrows(EntityExistsException.class, ()->userService.createUser("email2@email.com", "user1", "pass%word1"));
         assertEquals("User already exists!", e.getMessage());
+        userRepository.delete(user1);
     }
 }

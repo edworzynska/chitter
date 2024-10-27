@@ -20,13 +20,13 @@ import static org.mockito.Mockito.*;
 class PeepServiceTest {
 
     @Mock
-    PeepRepository peepRepository;
+    private PeepRepository peepRepository;
 
     @Mock
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @InjectMocks
-    PeepService peepService;
+    private PeepService peepService;
 
     private User mockedUser;
     private String username;

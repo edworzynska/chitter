@@ -1,14 +1,17 @@
 package com.example.chitter.service;
 
 import com.example.chitter.configuration.SecurityConfiguration;
+import com.example.chitter.model.Peep;
 import com.example.chitter.model.User;
 import com.example.chitter.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,5 +57,14 @@ public class UserService {
         userRepository.save(user);
 
         return user;
+    }
+    public User getUser(Long id){
+        if (userRepository.findById(id).isPresent()){
+            return userRepository.findById(id).get();
+        }
+        else throw new EntityNotFoundException("User not found!");
+    }
+    public List<Peep> usersPeeps(User user){
+        return user.getPeeps();
     }
 }

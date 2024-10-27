@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.net.Authenticator;
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class PeepService {
@@ -41,5 +42,11 @@ public class PeepService {
         peepRepository.save(peep);
 
         return peep;
+    }
+    public Peep getPeep(Long id){
+        if (peepRepository.findById(id).isPresent()){
+            return peepRepository.findById(id).get();
+        }
+        else throw new EntityNotFoundException("Peep not found!");
     }
 }
