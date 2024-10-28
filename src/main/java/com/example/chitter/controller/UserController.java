@@ -18,6 +18,12 @@ import java.util.List;
 public class UserController {
 
     @Autowired
+    public UserController(UserService userService, Mapper mapper) {
+        this.userService = userService;
+        this.mapper = mapper;
+    }
+
+    @Autowired
     UserService userService;
 
     @Autowired

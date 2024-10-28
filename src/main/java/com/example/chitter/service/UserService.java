@@ -59,10 +59,8 @@ public class UserService {
         return user;
     }
     public User getUser(Long id){
-        if (userRepository.findById(id).isPresent()){
-            return userRepository.findById(id).get();
-        }
-        else throw new EntityNotFoundException("User not found!");
+        return userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
     }
     public List<Peep> usersPeeps(User user){
         return user.getPeeps();

@@ -17,6 +17,9 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import java.time.LocalDateTime;
@@ -26,9 +29,9 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -38,25 +41,20 @@ class ChitterControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private PeepController peepController;
+    private PeepRepository peepRepository;
 
     @Autowired
-    private static PeepRepository peepRepository;
+    private UserRepository userRepository;
 
-    @Autowired
-    private static UserRepository userRepository;
+    private User user9;
+    private Peep peep9;
 
-    @Autowired
-    private PeepService peepService;
+    @BeforeEach
+    @Transactional
+    public void setUp() {
+        peepRepository.deleteAll();
+        userRepository.deleteAll();
 
-    @Autowired
-    private Mapper mapper;
-
-    static User user9;
-    static Peep peep9;
-
-    @BeforeAll
-    public static void setUp() {
         user9 = new User();
         user9.setUsername("user9");
         user9.setPassword("Password123!");
@@ -66,8 +64,26 @@ class ChitterControllerTest {
         peep9 = new Peep();
         peep9.setUser(user9);
         peep9.setContents("contents");
-        peep9.setDate(LocalDateTime.of(2024,7,14,14,20));
+        peep9.setDate(LocalDateTime.of(2024, 7, 14, 14, 20));
         peepRepository.save(peep9);
+    }
 
+    @Test
+    void getsUserAsDto() throws Exception {
+
+        Long userId = user9.getId();
+        user9.setPeeps(List.of(peep9));
+        assertNotNull(userId);
+
+        mockMvc.perform(get("/users/{userId}/peeps", userId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.username").value("user9"));
+    }
+
+    @Test
+    void returnsErrorIfUserDoesntExist() throws Exception{
+        mockMvc.perform(get("/users/20/peeps"))
+                .andExpect(status().is5xxServerError());
     }
 }

@@ -28,6 +28,7 @@ import static java.time.LocalTime.now;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@Transactional
 @SpringBootTest
 @ActiveProfiles("test")
 class PeepServiceIntegrationTest {

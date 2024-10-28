@@ -27,11 +27,8 @@ public class PeepService {
 
     @Transactional
     public Peep createPeep(String username, String contents){
-        User user;
-        if (userRepository.findByUsername(username).isPresent()){
-            user = userRepository.findByUsername(username).get();
-        }
-        else {throw new EntityNotFoundException("User doesn't exist!");}
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User doesn't exist!"));
         if (contents.isEmpty()){
             throw new InvalidParameterException("Peep cannot be empty!");
         }

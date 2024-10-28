@@ -15,6 +15,8 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import java.util.List;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -63,7 +66,7 @@ class PeepControllerTest {
         Peep peep8 = new Peep();
         peep8 = peepService.createPeep("user", "contents23");
         var id = peep8.getId();
-        mockMvc.perform(get("/peeps/3"))
+        mockMvc.perform(get("/peeps/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"));
     }

@@ -17,9 +17,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RequestMapping("/home")
 @RestController
 public class ChitterController {
+
+    @Autowired
+    public ChitterController(UserService userService, PeepService peepService, Mapper mapper) {
+        this.userService = userService;
+        this.peepService = peepService;
+        this.mapper = mapper;
+    }
 
     @Autowired
     private UserService userService;
@@ -30,9 +36,12 @@ public class ChitterController {
     @Autowired
     private Mapper mapper;
 
-    @GetMapping("/{userId}/peeps")
+    @GetMapping("users/{userId}/peeps")
     public ResponseEntity<UserDTO> getUserWithPeeps(@PathVariable Long userId){
         User user = userService.getUser(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         List<Peep> usersPeeps = userService.usersPeeps(user);
         UserDTO userDto = mapper.userToDTO(user, usersPeeps);
         return new ResponseEntity<>(userDto, HttpStatus.OK);

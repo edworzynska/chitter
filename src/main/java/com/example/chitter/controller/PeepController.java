@@ -22,6 +22,12 @@ import java.security.InvalidParameterException;
 public class PeepController {
 
     @Autowired
+    public PeepController(PeepService peepService, Mapper mapper) {
+        this.peepService = peepService;
+        this.mapper = mapper;
+    }
+
+    @Autowired
     PeepService peepService;
 
     @Autowired
@@ -43,6 +49,9 @@ public class PeepController {
     @GetMapping("peeps/{id}")
     public ResponseEntity<PeepDTO> getPeep(@PathVariable Long id){
         Peep peep = peepService.getPeep(id);
+        if (peep == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         PeepDTO peepDTO = mapper.peepToDTO(peep);
         return new ResponseEntity<>(peepDTO, HttpStatus.OK);
 
